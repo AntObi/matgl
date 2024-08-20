@@ -64,19 +64,19 @@ class GraphConverter(metaclass=abc.ABCMeta):
         # TODO: Need to check if the variable needs to be double or float, now use float
         lattice = torch.tensor(np.array(lattice_matrix), dtype=matgl.float_th)
         # Note: pbc_ offshift and pos needs to be float64 to handle cases where bonds are exactly at cutoff
-        if element_types:
+        if species_types is None:
             element_to_index = {elem: idx for idx, elem in enumerate(element_types)}
             node_type = (
                 np.array([element_types.index(site.specie.symbol) for site in structure])
                 if is_atoms is False
                 else np.array([element_to_index[elem] for elem in structure.get_chemical_symbols()])
             )
-        else:
-            species_to_index = {specie: idx for idx, specie in enumerate(species_types)}
+        elif species_types and not is_atoms:
+            # species_to_index = {specie: idx for idx, specie in enumerate(species_types)}
             node_type = (
                 np.array([species_types.index(site.specie.to_pretty_string()) for site in structure])
-                if is_atoms is False
-                else np.array([species_to_index[specie] for specie in structure.get_atomic_numbers()])
+                # if is_atoms is False TODO: Need to check how to implement with ASE atoms object
+                # else np.array([species_to_index[specie] for specie in structure.get_atomic_numbers()])
             )
         g.ndata["node_type"] = torch.tensor(node_type, dtype=matgl.int_th)
         # TODO: Need to check if the variable needs to be double or float, now use float
