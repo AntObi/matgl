@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.sparse as sp
-from pymatgen.core import Element, Molecule, Structure
+from pymatgen.core import Element, Molecule, Structure, Species
 from pymatgen.optimization.neighbors import find_points_in_spheres
 
 from matgl.graph.converters import GraphConverter
@@ -29,6 +29,21 @@ def get_element_list(train_structures: list[Structure | Molecule]) -> tuple[str,
     for s in train_structures:
         elements.update(s.composition.get_el_amt_dict().keys())
     return tuple(sorted(elements, key=lambda el: Element(el).Z))
+
+
+def get_species_list(train_structures: list[Structure | Molecule]) -> tuple[str, ...]:
+    """Get the tuple of species in the training set for ionic features.
+
+    Args:
+        train_structures: pymatgen Molecule/Structure object (must have oxidation states)
+
+    Returns:
+        Tuple of species covered in training set
+    """
+    species: set[str] = set()
+    for s in train_structures:
+        species.update(s.composition.as_dict().keys())
+    return tuple(sorted(species, key=lambda sp: Species(sp).element.Z))
 
 
 class Molecule2Graph(GraphConverter):
