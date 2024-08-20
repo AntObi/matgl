@@ -43,7 +43,7 @@ def get_species_list(train_structures: list[Structure | Molecule]) -> tuple[str,
     species: set[str] = set()
     for s in train_structures:
         species.update(s.composition.as_dict().keys())
-    return tuple(sorted(species, key=lambda sp: Species(sp).element.Z))
+    return tuple(sorted(species, key=lambda sp: (Species(sp).element.Z, SPecies(sp).oxi_state)))
 
 
 class Molecule2Graph(GraphConverter):
