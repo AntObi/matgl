@@ -100,16 +100,26 @@ class Structure2Graph(GraphConverter):
 
     def __init__(
         self,
-        element_types: tuple[str, ...],
+        element_types: tuple[str, ...]| None = None,
+        species_types: tuple[str, ...] | None = None,
         cutoff: float = 5.0,
     ):
         """Parameters
         ----------
         element_types: List of elements present in dataset for graph conversion. This ensures all graphs are
             constructed with the same dimensionality of features.
+        species_types: List of species present in dataset for graph conversion. This ensures all graphs are
+            constructed with the same dimensionality of features.
         cutoff: Cutoff radius for graph representation
         """
-        self.element_types = tuple(element_types)
+        # Both element_types and species_types cannot be supplied at the same time but one of them must be supplied
+        assert (element_types is not None) ^ (species_types is not None)
+        if element_types:
+            self.element_types = tuple(element_types)
+            self.species_types = None
+        else:
+            self.species_types = tuple(species_types)
+            self.element_types = None
         self.cutoff = cutoff
 
     def get_graph(self, structure: Structure) -> tuple[dgl.DGLGraph, torch.Tensor, list]:
@@ -124,6 +134,7 @@ class Structure2Graph(GraphConverter):
         numerical_tol = 1.0e-8
         pbc = np.array([1, 1, 1], dtype=int)
         element_types = self.element_types
+        species_types = self.species_types
         lattice_matrix = structure.lattice.matrix
         cart_coords = structure.cart_coords
         src_id, dst_id, images, bond_dist = find_points_in_spheres(
@@ -149,5 +160,6 @@ class Structure2Graph(GraphConverter):
             [lattice_matrix],
             element_types,
             structure.frac_coords,
+            species_types=species_types,
         )
         return g, lat, state_attr
