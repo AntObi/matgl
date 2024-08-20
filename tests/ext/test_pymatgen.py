@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 import torch
-from matgl.ext.pymatgen import Structure2Graph, get_element_list
+from matgl.ext.pymatgen import Structure2Graph, get_element_list, get_species_list
 from pymatgen.core import Lattice, Structure
 
 module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -74,3 +74,9 @@ class TestPmg2Graph:
         naf = Structure.from_spacegroup("Pm-3m", Lattice.cubic(3), ["Na", "F"], [[0, 0, 0], [0.5, 0.5, 0.5]])
         elem_list = get_element_list([cscl, naf])
         assert elem_list == ("F", "Na", "Cl", "Cs")
+
+    def test_get_species_list(self):
+        cscl_oxi = Structure.from_spacegroup("Pm-3m", Lattice.cubic(3), ["Cs+", "Cl-"], [[0, 0, 0], [0.5, 0.5, 0.5]])
+        naf_oxi = Structure.from_spacegroup("Pm-3m", Lattice.cubic(3), ["Na+", "F-"], [[0, 0, 0], [0.5, 0.5, 0.5]])
+        species_list = get_species_list([cscl_oxi, naf_oxi])
+        assert species_list == ("F-", "Na+", "Cl-", "Cs+")
