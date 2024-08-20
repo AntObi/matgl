@@ -100,7 +100,7 @@ class Structure2Graph(GraphConverter):
 
     def __init__(
         self,
-        element_types: tuple[str, ...]| None = None,
+        element_types: tuple[str, ...] | None = None,
         species_types: tuple[str, ...] | None = None,
         cutoff: float = 5.0,
     ):
