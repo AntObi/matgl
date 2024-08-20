@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.sparse as sp
-from pymatgen.core import Element, Molecule, Structure, Species
+from pymatgen.core import Element, Molecule, Species, Structure
 from pymatgen.optimization.neighbors import find_points_in_spheres
 
 from matgl.graph.converters import GraphConverter
@@ -43,7 +43,7 @@ def get_species_list(train_structures: list[Structure | Molecule]) -> tuple[str,
     species: set[str] = set()
     for s in train_structures:
         species.update(s.composition.as_dict().keys())
-    return tuple(sorted(species, key=lambda sp: (Species(sp).element.Z, SPecies(sp).oxi_state)))
+    return tuple(sorted(species, key=lambda sp: (Species(sp).element.Z, Species(sp).oxi_state)))
 
 
 class Molecule2Graph(GraphConverter):
