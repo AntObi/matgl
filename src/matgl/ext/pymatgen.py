@@ -114,12 +114,8 @@ class Structure2Graph(GraphConverter):
         """
         # Both element_types and species_types cannot be supplied at the same time but one of them must be supplied
         assert (element_types is not None) ^ (species_types is not None)
-        if element_types:
-            self.element_types = tuple(element_types)
-            self.species_types = None
-        else:
-            self.species_types = tuple(species_types)
-            self.element_types = None
+        self.element_types = tuple(element_types) if element_types else None
+        self.species_types = tuple(species_types) if species_types else None
         self.cutoff = cutoff
 
     def get_graph(self, structure: Structure) -> tuple[dgl.DGLGraph, torch.Tensor, list]:
