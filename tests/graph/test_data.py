@@ -8,7 +8,7 @@ from functools import partial
 
 import numpy as np
 from dgl.data.utils import split_dataset
-from matgl.ext.pymatgen import Molecule2Graph, Structure2Graph, get_element_list
+from matgl.ext.pymatgen import Molecule2Graph, Structure2Graph, get_element_list, get_species_list
 from matgl.graph.data import MGLDataLoader, MGLDataset, collate_fn_graph, collate_fn_pes
 from pymatgen.core import Molecule
 
@@ -112,6 +112,33 @@ class TestDataset:
         assert g2.num_edges() == mol_graph.get_graph(CH4)[0].num_edges()
         assert g2.num_nodes() == mol_graph.get_graph(CH4)[0].num_nodes()
         assert np.allclose(lat1.detach().numpy(), np.expand_dims(np.identity(3), axis=0))
+
+    def test_megnet_dataset_with_species(self, LiFePO4, BaNiO3):
+        structures = [LiFePO4, BaNiO3]
+        structures = [
+            s.add_oxidation_state_by_element({"Li": 1, "Fe": 2, "P": 5, "O": -2, "Ba": 2, "Ni": 4}) for s in structures
+        ]
+        label = [-1.0, 2.0]
+        species_types = get_species_list(structures)
+        cry_graph = Structure2Graph(species_types=species_types, cutoff=4.0)
+        dataset = MGLDataset(
+            structures=structures,
+            converter=cry_graph,
+            labels={"label": label},
+            clear_processed=True,
+            save_cache=False,
+        )
+        g1, lat1, state1, label1 = dataset[0]
+        g2, lat2, state2, label2 = dataset[1]
+        assert label1["label"] == label[0]
+        assert g1.num_edges() == cry_graph.get_graph(LiFePO4)[0].num_edges()
+        assert g1.num_nodes() == cry_graph.get_graph(LiFePO4)[0].num_nodes()
+        assert g2.num_edges() == cry_graph.get_graph(BaNiO3)[0].num_edges()
+        assert g2.num_nodes() == cry_graph.get_graph(BaNiO3)[0].num_nodes()
+        assert np.allclose(lat1.detach().numpy(), structures[0].lattice.matrix)
+        assert np.allclose(lat2.detach().numpy(), structures[1].lattice.matrix)
+        # Check that structures are indeed cleared.
+        assert len(dataset.structures) == 0
 
     def test_mgl_dataset(self, LiFePO4, BaNiO3):
         structures = [LiFePO4, BaNiO3]
